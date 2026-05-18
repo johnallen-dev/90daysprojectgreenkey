@@ -51,21 +51,21 @@
 
   <!-- ── Filter bar ───────────────────────────────────────────────────────────── -->
   <div class="filter-bar" role="group" aria-label="Property filter">
-    <button class="filter-btn active" data-filter="all">All Properties</button>
-    <button class="filter-btn"        data-filter="90days">90 Days</button>
+    <button class="filter-btn active" data-filter="90days">90 Days</button>
     <button class="filter-btn"        data-filter="non90days">Non-90 Days</button>
+    <button class="filter-btn"        data-filter="all">All Properties</button>
   </div>
 
   <!-- ── Tab bar ────────────────────────────────────────────────────────────── -->
   <div class="tabs-bar" role="tablist">
-    <button class="tab active" data-tab="cards" role="tab" aria-selected="true">Card Grid</button>
-    <button class="tab"        data-tab="table" role="tab" aria-selected="false">Table</button>
+    <button class="tab active" data-tab="table" role="tab" aria-selected="true">Table</button>
+    <button class="tab"        data-tab="cards" role="tab" aria-selected="false">Card Grid</button>
   </div>
 
   <!-- ── Main content ───────────────────────────────────────────────────────── -->
   <main class="main">
-    <div id="cardsView" class="cards-view"  role="tabpanel"></div>
-    <div id="tableView" class="table-view hidden" role="tabpanel"></div>
+    <div id="cardsView" class="cards-view hidden" role="tabpanel"></div>
+    <div id="tableView" class="table-view"        role="tabpanel"></div>
   </main>
 
   <!-- ── Settings modal ─────────────────────────────────────────────────────── -->

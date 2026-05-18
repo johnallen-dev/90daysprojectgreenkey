@@ -45,8 +45,8 @@
     data:      null,
     sortCol:   'nights',
     sortAsc:   false,
-    activeTab: 'cards',
-    filter:    'all'
+    activeTab: 'table',
+    filter:    '90days'
   };
 
   function filterProperties(properties) {
