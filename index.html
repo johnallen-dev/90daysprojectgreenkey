@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>90 Days · GreenKey</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-source="api">
+
+  <!-- ── Header ─────────────────────────────────────────────────────────────── -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-title">
+        <h1>90 Days <span class="header-sub">/ 2M ISK</span></h1>
+        <span class="header-brand">GreenKey Property Tracker</span>
+      </div>
+      <nav class="page-nav">
+        <a href="index.html" class="page-nav-link page-nav-link--active">Live Data</a>
+        <a href="csv.html"   class="page-nav-link">Uploaded</a>
+      </nav>
+      <div class="header-right">
+        <div id="rateChip" class="rate-chip">EUR / ISK —</div>
+        <span id="updatedAt" class="updated-at"></span>
+        <button id="refreshBtn" class="btn-icon" title="Refresh data">
+          <!-- refresh icon -->
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"/>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+          </svg>
+        </button>
+        <button id="settingsBtn" class="btn-icon" title="Settings">
+          <!-- gear icon -->
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Demo mode banner ───────────────────────────────────────────────────── -->
+  <div id="demoBanner" class="demo-banner hidden">
+    <span id="bannerText">Demo mode — showing sample data. </span>
+    <a href="#" id="openSettingsLink">Connect to Uplisting →</a>
+  </div>
+
+  <!-- ── Summary stats ──────────────────────────────────────────────────────── -->
+  <div id="summary" class="summary"></div>
+
+  <!-- ── Filter bar ───────────────────────────────────────────────────────────── -->
+  <div class="filter-bar" role="group" aria-label="Property filter">
+    <button class="filter-btn active" data-filter="all">All Properties</button>
+    <button class="filter-btn"        data-filter="90days">90 Days</button>
+    <button class="filter-btn"        data-filter="non90days">Non-90 Days</button>
+  </div>
+
+  <!-- ── Tab bar ────────────────────────────────────────────────────────────── -->
+  <div class="tabs-bar" role="tablist">
+    <button class="tab active" data-tab="cards" role="tab" aria-selected="true">Card Grid</button>
+    <button class="tab"        data-tab="table" role="tab" aria-selected="false">Table</button>
+  </div>
+
+  <!-- ── Main content ───────────────────────────────────────────────────────── -->
+  <main class="main">
+    <div id="cardsView" class="cards-view"  role="tabpanel"></div>
+    <div id="tableView" class="table-view hidden" role="tabpanel"></div>
+  </main>
+
+  <!-- ── Settings modal ─────────────────────────────────────────────────────── -->
+  <div id="settingsModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalTitle">Settings</h2>
+        <button id="closeModal" class="btn-icon" aria-label="Close settings">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <label for="gasUrlInput">Apps Script Web App URL</label>
+        <input
+          type="url"
+          id="gasUrlInput"
+          placeholder="https://script.google.com/macros/s/…/exec"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button id="saveSettings" class="btn-primary">Save &amp; Refresh</button>
+        <button id="clearUrl" class="btn-link">Remove saved URL (return to demo)</button>
+
+        <div class="setup-steps">
+          <h3>How to connect Uplisting data</h3>
+          <ol>
+            <li>
+              Request Uplisting API access at
+              <a href="mailto:support@uplisting.io">support@uplisting.io</a>
+            </li>
+            <li>
+              Get your API key at
+              <code>app.uplisting.io/connect/api</code>
+            </li>
+            <li>
+              Open <a href="https://script.google.com" target="_blank" rel="noopener">Google Apps Script</a>,
+              create a new project and paste the contents of <code>apps-script.gs</code>
+            </li>
+            <li>
+              In the script editor go to
+              <strong>Project Settings → Script Properties</strong>
+              and add key <code>UPLISTING_KEY</code> with your API key
+            </li>
+            <li>
+              Click <strong>Deploy → New deployment → Web App</strong>
+              (Execute as: Me · Who has access: Anyone)
+            </li>
+            <li>Copy the Web App URL and paste it into the field above</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Uploaded Data · GreenKey</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-source="csv">
+
+  <!-- ── Header ─────────────────────────────────────────────────────────────── -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-title">
+        <h1>90 Days <span class="header-sub">/ 2M ISK</span></h1>
+        <span class="header-brand">GreenKey Property Tracker</span>
+      </div>
+      <nav class="page-nav">
+        <a href="index.html" class="page-nav-link">Live Data</a>
+        <a href="csv.html"   class="page-nav-link page-nav-link--active">Uploaded</a>
+      </nav>
+      <div class="header-right">
+        <div id="rateChip" class="rate-chip">EUR / ISK —</div>
+        <span id="updatedAt" class="updated-at"></span>
+        <button id="refreshBtn" class="btn-icon" title="Refresh data">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"/>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+          </svg>
+        </button>
+        <button id="settingsBtn" class="btn-icon" title="Upload CSV">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Banner ────────────────────────────────────────────────────────────────── -->
+  <div id="demoBanner" class="demo-banner hidden">
+    <span id="bannerText"></span>
+    <a href="#" id="openSettingsLink">Update →</a>
+  </div>
+
+  <!-- ── Summary stats ──────────────────────────────────────────────────────── -->
+  <div id="summary" class="summary"></div>
+
+  <!-- ── Filter bar ───────────────────────────────────────────────────────────── -->
+  <div class="filter-bar" role="group" aria-label="Property filter">
+    <button class="filter-btn active" data-filter="all">All Properties</button>
+    <button class="filter-btn"        data-filter="90days">90 Days</button>
+    <button class="filter-btn"        data-filter="non90days">Non-90 Days</button>
+  </div>
+
+  <!-- ── Tab bar ────────────────────────────────────────────────────────────── -->
+  <div class="tabs-bar" role="tablist">
+    <button class="tab active" data-tab="cards" role="tab" aria-selected="true">Card Grid</button>
+    <button class="tab"        data-tab="table" role="tab" aria-selected="false">Table</button>
+  </div>
+
+  <!-- ── Main content ───────────────────────────────────────────────────────── -->
+  <main class="main">
+    <div id="cardsView" class="cards-view"  role="tabpanel"></div>
+    <div id="tableView" class="table-view hidden" role="tabpanel"></div>
+  </main>
+
+  <!-- ── Upload modal ───────────────────────────────────────────────────────── -->
+  <div id="settingsModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalTitle">Upload CSV</h2>
+        <button id="closeModal" class="btn-icon" aria-label="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <label>Upload a CSV export from Uplisting Reports</label>
+        <div class="csv-row">
+          <label for="csvFile" class="btn-secondary">Choose file…</label>
+          <input type="file" id="csvFile" accept=".csv" class="visually-hidden" />
+          <span id="csvFileName" class="csv-filename">No file chosen</span>
+        </div>
+        <p class="field-hint">Uplisting → Reports → Bookings → Export · set date range Jan 1 – today</p>
+        <button id="clearCsv" class="btn-link hidden">Remove uploaded data</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
