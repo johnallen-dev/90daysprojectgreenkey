@@ -430,7 +430,7 @@
           state.sortCol = col;
           state.sortAsc = false;
         }
-        renderTable(state.data.properties);
+        renderTable(filterProperties(state.data.properties));
       });
     });
   }
