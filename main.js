@@ -40,6 +40,24 @@
     return [...TRACKED_90_DAYS].some(t => t.toLowerCase() === n);
   }
 
+  // ── 90 Days property list panel ─────────────────────────────────────────────
+  function initPropListPanel() {
+    const toggle  = document.getElementById('propListToggle');
+    const body    = document.getElementById('propListBody');
+    const countEl = document.getElementById('propListCount');
+    if (!toggle || !body) return;
+
+    const items = [...TRACKED_90_DAYS].sort((a, b) => a.localeCompare(b));
+    countEl.textContent = items.length;
+    body.innerHTML = items.map(n => `<span class="prop-chip">${n}</span>`).join('');
+
+    toggle.addEventListener('click', () => {
+      const open = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!open));
+      body.classList.toggle('hidden', open);
+    });
+  }
+
   // ── App state ───────────────────────────────────────────────────────────────
   const state = {
     data:      null,
@@ -539,6 +557,8 @@
 
   // ── Wire up events ───────────────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', () => {
+    initPropListPanel();
+
     // Filter
     document.querySelectorAll('.filter-btn').forEach(btn =>
       btn.addEventListener('click', () => switchFilter(btn.dataset.filter))

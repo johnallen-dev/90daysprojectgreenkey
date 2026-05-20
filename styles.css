@@ -233,6 +233,90 @@ a:hover { text-decoration: underline; }
   color: #fff;
 }
 
+/* ── 90 Days property list panel ───────────────────────────────────────────── */
+.prop-list-panel {
+  max-width: 1400px;
+  margin: 12px auto 0;
+  padding: 0 24px;
+}
+
+.prop-list-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 14px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color .15s, color .15s;
+}
+
+.prop-list-toggle:hover { border-color: var(--text-muted); color: var(--text); }
+
+.prop-list-toggle[aria-expanded="true"] {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-color: transparent;
+  color: var(--text);
+}
+
+.prop-list-toggle__label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.prop-list-count {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.prop-list-toggle__chevron {
+  flex-shrink: 0;
+  transition: transform .2s ease;
+}
+
+.prop-list-toggle[aria-expanded="true"] .prop-list-toggle__chevron {
+  transform: rotate(180deg);
+}
+
+.prop-list-body {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-bottom-left-radius: var(--radius-sm);
+  border-bottom-right-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.prop-list-body.hidden { display: none !important; }
+
+.prop-chip {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px 11px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
 /* ── Tabs ──────────────────────────────────────────────────────────────────── */
 .tabs-bar {
   max-width: 1400px;
@@ -652,6 +736,7 @@ a:hover { text-decoration: underline; }
   .summary      { padding: 0 16px; gap: 10px; }
   .tabs-bar     { padding: 0 16px; }
 
-  .cards-view   { grid-template-columns: 1fr; }
-  .stat-value   { font-size: 24px; }
+  .cards-view    { grid-template-columns: 1fr; }
+  .stat-value    { font-size: 24px; }
+  .prop-list-panel { padding: 0 16px; }
 }
