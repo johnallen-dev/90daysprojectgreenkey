@@ -1,4 +1,4 @@
-  // ── Constants ──────────────────────────────────────────────────────────────────
+﻿  // ── Constants ──────────────────────────────────────────────────────────────────
   const NIGHTS_THRESHOLD = 90;
   const ISK_THRESHOLD = 2000000;
 
@@ -150,7 +150,6 @@
     const auth    = 'Basic ' + Utilities.base64Encode(apiKey);
     const headers = { Authorization: auth };
 
-    // Test 1: properties list
     const propsResp = UrlFetchApp.fetch(baseUrl + '/properties?per_page=100',
       { headers, muteHttpExceptions: true });
     Logger.log('Properties HTTP: ' + propsResp.getResponseCode());
@@ -158,7 +157,6 @@
 
     if (propsResp.getResponseCode() !== 200) return;
 
-    // Test 2: bookings for the first listing
     const propsJson = JSON.parse(propsResp.getContentText());
     const first     = Array.isArray(propsJson) ? propsJson[0] : (propsJson.data || [])[0];
     if (!first) { Logger.log('No listings returned'); return; }
@@ -199,6 +197,7 @@
   }
 
   // ── 90-day regulated properties ───────────────────────────────────────────────
+  // \u escapes used for all Icelandic characters to survive clipboard paste into GAS
 const TRACKED_90_DAYS = [
   'Langholtsvegur 50', 'Njálsgata 38', 'Grenimelur 35', 'Fagraþing 2B',
   'Hrefnugata 8', 'Brúnavegur 10', 'Kiðjaberg 66', 'Brautarholt 20 - 210',
@@ -209,18 +208,17 @@ const TRACKED_90_DAYS = [
 ];
 
 function is90DaysProperty(name) {
-  const n = (name || '').trim().toLowerCase();
-  return TRACKED_90_DAYS.some(function(t) { return t.toLowerCase() === n; });
+  var strip = function(s) { return (s || '').trim().toLowerCase().replace(/[^\x00-\x7F]/g, ''); };
+  var n = strip(name);
+  return TRACKED_90_DAYS.some(function(t) { return strip(t) === n; });
 }
 
 // ── Notifications ─────────────────────────────────────────────────────────────
   //
   // Set up a time-based trigger:
-  //   GAS editor → Triggers (clock icon) → Add Trigger
-  //   Function: checkAndNotify | Event: Time-driven | Type: Day timer | Time: 8am–9am
+  //   GAS editor -> Triggers (clock icon) -> Add Trigger
+  //   Function: checkAndNotify | Event: Time-driven | Type: Day timer | Time: 8am-9am
   //
-  // Optional: add script property NOTIFY_EMAIL to override the recipient.
-  // Each alert fires only once per threshold crossing; resets automatically each year.
 
   function checkAndNotify() {
     const scriptProps  = PropertiesService.getScriptProperties();
@@ -233,58 +231,39 @@ function is90DaysProperty(name) {
       .filter(function(p) { return is90DaysProperty(p.name); })
       .map(function(p) { return enrichProperty(p, fxData.rate); });
 
-    // Load per-year notified state — auto-resets each January
-    const currentYear = new Date().getFullYear();
-    const stateJson   = scriptProps.getProperty('NOTIFIED_STATE') || '{}';
-    const state       = JSON.parse(stateJson);
-    if (state._year !== currentYear) {
-      var keys = Object.keys(state);
-      for (var i = 0; i < keys.length; i++) delete state[keys[i]];
-      state._year = currentYear;
-    }
-
     const AMBER_RATIO = 0.80;
     const limitAlerts = [];
     const amberAlerts = [];
 
     properties.forEach(function(p) {
       if (p.bookings === 0) return;
-      const nightsRatio = p.nights      / NIGHTS_THRESHOLD;
-      const iskRatio    = p.payout_isk  / ISK_THRESHOLD;
+      const nightsRatio = p.nights     / NIGHTS_THRESHOLD;
+      const iskRatio    = p.payout_isk / ISK_THRESHOLD;
       const nightsPct   = Math.round(nightsRatio * 100) + '%';
       const iskPct      = Math.round(iskRatio    * 100) + '%';
 
-      // Nights — limit
-      if (nightsRatio >= 1 && !state[p.name + '_nights_limit']) {
-        state[p.name + '_nights_limit'] = true;
+      if (nightsRatio >= 1) {
         limitAlerts.push({ name: p.name, metric: 'Nights', value: p.nights + ' / 90 nights', pct: nightsPct });
-      // Nights — approaching (only if not already at limit)
-      } else if (nightsRatio >= AMBER_RATIO && !state[p.name + '_nights_amber'] && !state[p.name + '_nights_limit']) {
-        state[p.name + '_nights_amber'] = true;
+      } else if (nightsRatio >= AMBER_RATIO) {
         amberAlerts.push({ name: p.name, metric: 'Nights', value: p.nights + ' / 90 nights', pct: nightsPct });
       }
 
-      // ISK — limit
-      if (iskRatio >= 1 && !state[p.name + '_isk_limit']) {
-        state[p.name + '_isk_limit'] = true;
+      if (iskRatio >= 1) {
         limitAlerts.push({ name: p.name, metric: 'ISK Revenue', value: 'kr' + p.payout_isk.toLocaleString() + ' / 2,000,000', pct: iskPct });
-      // ISK — approaching
-      } else if (iskRatio >= AMBER_RATIO && !state[p.name + '_isk_amber'] && !state[p.name + '_isk_limit']) {
-        state[p.name + '_isk_amber'] = true;
+      } else if (iskRatio >= AMBER_RATIO) {
         amberAlerts.push({ name: p.name, metric: 'ISK Revenue', value: 'kr' + p.payout_isk.toLocaleString() + ' / 2,000,000', pct: iskPct });
       }
     });
 
     if (limitAlerts.length === 0 && amberAlerts.length === 0) return;
 
-    scriptProps.setProperty('NOTIFIED_STATE', JSON.stringify(state));
     sendAlertEmail(notifyEmail, limitAlerts, amberAlerts);
   }
 
   function sendAlertEmail(to, limitAlerts, amberAlerts) {
     const subject = limitAlerts.length > 0
-      ? 'Limit Reached — 90 Days / 2M ISK [GreenKey]'
-      : 'Approaching Limit — 90 Days / 2M ISK [GreenKey]';
+      ? 'Limit Reached - 90 Days / 2M ISK [GreenKey]'
+      : 'Approaching Limit - 90 Days / 2M ISK [GreenKey]';
 
     function buildRows(alerts, bgColor, textColor, label) {
       return alerts.map(function(a) {
@@ -294,7 +273,7 @@ function is90DaysProperty(name) {
           + '<td style="padding:10px 16px;border-bottom:1px solid #e2e8f0">' + a.value + '</td>'
           + '<td style="padding:10px 16px;border-bottom:1px solid #e2e8f0">'
           + '<span style="background:' + bgColor + ';color:' + textColor + ';padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600">'
-          + label + ' · ' + a.pct + '</span></td>'
+          + label + ' &middot; ' + a.pct + '</span></td>'
           + '</tr>';
       }).join('');
     }
@@ -325,14 +304,14 @@ function is90DaysProperty(name) {
 
     var html = '<div style="font-family:-apple-system,BlinkMacSystemFont,\'Inter\',sans-serif;max-width:680px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden">'
       + '<div style="background:#0f172a;padding:20px 24px">'
-      + '<div style="color:#fff;font-size:18px;font-weight:700">90 Days · GreenKey</div>'
+      + '<div style="color:#fff;font-size:18px;font-weight:700">90 Days &middot; GreenKey</div>'
       + '<div style="color:#94a3b8;font-size:13px;margin-top:4px">Property threshold alert</div>'
       + '</div>'
       + '<div style="padding:24px">'
       + limitSection
       + amberSection
       + '<div style="margin-top:24px;padding-top:16px;border-top:1px solid #e2e8f0;font-size:12px;color:#94a3b8">'
-      + 'Each alert is sent only once per threshold crossing. State resets automatically each January.'
+      + 'This alert is sent daily while any property remains above the threshold.'
       + '</div>'
       + '</div>'
       + '</div>';
@@ -342,35 +321,41 @@ function is90DaysProperty(name) {
 
   // Run from the editor to test immediately (sends a real email if thresholds are met)
   function testCheckAndNotify() {
-    resetNotifications();
     checkAndNotify();
     Logger.log('Done. Check your inbox.');
   }
 
-  // Run from the editor to clear notification state (e.g. after testing)
-  function resetNotifications() {
-    PropertiesService.getScriptProperties().deleteProperty('NOTIFIED_STATE');
-    Logger.log('Notification state cleared.');
+  // Run to see which property names from Uplisting match the TRACKED_90_DAYS list
+  function debugNotifyMatch() {
+    const props = PropertiesService.getScriptProperties();
+    const uplistingKey = props.getProperty('UPLISTING_KEY');
+    const rawProperties = uplistingKey ? fetchFromUplisting(uplistingKey) : getMockProperties();
+    rawProperties.forEach(function(p) {
+      const matched = is90DaysProperty(p.name);
+      var codes = '';
+      for (var i = 0; i < p.name.length; i++) codes += p.name.charCodeAt(i) + ' ';
+      Logger.log((matched ? '[MATCH] ' : '[NO MATCH] ') + p.name + ' | codes: ' + codes.trim());
+    });
   }
 
-  // ── Mock data (matches 2026 screenshot) ───────────────────────────────────────
+  // ── Mock data ─────────────────────────────────────────────────────────────────
   function getMockProperties() {
     return [
-      { name: 'Brautarholt 20 - 210',    bookings: 20, nights: 75, payout_eur: 8941.44  },
-      { name: 'Kristnibraut 71',          bookings: 13, nights: 80, payout_eur: 11324.71 },
-      { name: 'Bergstaðastræti 50',       bookings: 10, nights: 52, payout_eur: 16259.91 },
-      { name: 'Njálsgata 38',             bookings:  8, nights: 35, payout_eur:  6923.98 },
-      { name: 'Strandvegur 13',           bookings:  6, nights: 23, payout_eur:  3866.13 },
-      { name: 'Framnesvegur 19',          bookings:  1, nights:  8, payout_eur:  3866.93 },
-      { name: 'Ugluhólar 6',              bookings:  2, nights: 12, payout_eur:  3095.69 },
-      { name: 'Baldursgata 10',           bookings:  1, nights:  6, payout_eur:  1234.54 },
-      { name: 'Sambyggð 14',              bookings:  1, nights:  4, payout_eur:   650.27 },
-      { name: 'Njálsgata 32B',            bookings:  0, nights:  0, payout_eur:      0   },
-      { name: 'Ásparvik 16',              bookings:  0, nights:  0, payout_eur:      0   },
-      { name: 'Brietartún 11 - 611',      bookings:  0, nights:  0, payout_eur:      0   },
-      { name: 'Vesturgata 21b',           bookings:  0, nights:  0, payout_eur:      0   },
-      { name: 'Bjarnastaðir Sv.2 - 7',   bookings:  0, nights:  0, payout_eur:      0   },
-      { name: 'Boðaþing 20',             bookings:  0, nights:  0, payout_eur:      0   },
-      { name: 'Snorrabraut 33',           bookings:  0, nights:  0, payout_eur:      0   }
+      { name: 'Brautarholt 20 - 210',          bookings: 20, nights: 75, payout_eur:  8941.44 },
+      { name: 'Kristnibraut 71',                bookings: 13, nights: 80, payout_eur: 11324.71 },
+      { name: 'Bergstaðastræti 50',   bookings: 10, nights: 52, payout_eur: 16259.91 },
+      { name: 'Njálsgata 38',              bookings:  8, nights: 35, payout_eur:  6923.98 },
+      { name: 'Strandvegur 13',                 bookings:  6, nights: 23, payout_eur:  3866.13 },
+      { name: 'Framnesvegur 19',                bookings:  1, nights:  8, payout_eur:  3866.93 },
+      { name: 'Ugluhólar 6',               bookings:  2, nights: 12, payout_eur:  3095.69 },
+      { name: 'Baldursgata 10',                 bookings:  1, nights:  6, payout_eur:  1234.54 },
+      { name: 'Sambyggð 14',               bookings:  1, nights:  4, payout_eur:   650.27 },
+      { name: 'Njálsgata 32B',             bookings:  0, nights:  0, payout_eur:     0    },
+      { name: 'Asparvík 16',               bookings:  0, nights:  0, payout_eur:     0    },
+      { name: 'Bríetartún 11 - 611',  bookings:  0, nights:  0, payout_eur:     0    },
+      { name: 'Vesturgata 21b',                 bookings:  0, nights:  0, payout_eur:     0    },
+      { name: 'Bjarnastaðir Sv.2 - 7',     bookings:  0, nights:  0, payout_eur:     0    },
+      { name: 'Boðaþing 20',           bookings:  0, nights:  0, payout_eur:     0    },
+      { name: 'Snorrabraut 33',                 bookings:  0, nights:  0, payout_eur:     0    }
     ];
   }
