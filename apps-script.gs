@@ -81,7 +81,9 @@
   }
 
   // ── Uplisting API ──────────────────────────────────────────────────────────────
-  function fetchFromUplisting(apiKey) {
+  // nameFilter: optional function(name) → bool — when provided, bookings are only
+  // fetched for matching listings, avoiding unnecessary API calls and GAS timeouts.
+  function fetchFromUplisting(apiKey, nameFilter) {
     const baseUrl = 'https://connect.uplisting.io';
     // Auth: Basic base64(apiKey) — no colon, no email
     const auth    = 'Basic ' + Utilities.base64Encode(apiKey);
@@ -100,15 +102,21 @@
     const propsBody = JSON.parse(propsResp.getContentText());
     const listings  = Array.isArray(propsBody) ? propsBody : (propsBody.data || []);
 
-    // Step 2: seed map with all listings at 0 so properties with no bookings still appear
+    // Step 2: seed map — filter to tracked listings only when nameFilter is provided
     const map = {};
-    listings.forEach(function(listing) {
+    const toFetch = nameFilter
+      ? listings.filter(function(l) {
+          const n = (l.attributes && (l.attributes.nickname || l.attributes.name)) || l.name || 'Unknown';
+          return nameFilter(n);
+        })
+      : listings;
+    toFetch.forEach(function(listing) {
       const name = (listing.attributes && (listing.attributes.nickname || listing.attributes.name)) || listing.name || 'Unknown';
       map[name] = { name, bookings: 0, nights: 0, payout_eur: 0 };
     });
 
     // Step 3: fetch bookings per listing — omit page/per_page (causes empty results)
-    listings.forEach(function(listing) {
+    toFetch.forEach(function(listing) {
       const listingId = listing.id;
       const name      = (listing.attributes && (listing.attributes.nickname || listing.attributes.name)) || listing.name || 'Unknown';
 
@@ -204,7 +212,8 @@ const TRACKED_90_DAYS = [
   'Kristnibraut 71', 'Bergstaðastræti 50', 'Strandvegur 13', 'Njálsgata 32B',
   'Asparvík 16', 'Framnesvegur 19', 'Bríetartún 11 - 611', 'Baldursgata 10',
   'Vesturgata 21b', 'Ugluhólar 6', 'Bjarnastaðir Sv.2 - 7', 'Sambyggð 14',
-  'Boðaþing 20', 'Snorrabraut 33'
+  'Boðaþing 20', 'Snorrabraut 33', 'Berjaholtslækur 7',
+  'Grettisgata 34', 'Hvammsgerði 10', 'Hraunbær 102A', 'Heiðarimi 24'
 ];
 
 function is90DaysProperty(name) {
@@ -225,7 +234,7 @@ function is90DaysProperty(name) {
     const uplistingKey = scriptProps.getProperty('UPLISTING_KEY');
     const notifyEmail  = scriptProps.getProperty('NOTIFY_EMAIL') || Session.getActiveUser().getEmail();
 
-    const rawProperties = uplistingKey ? fetchFromUplisting(uplistingKey) : getMockProperties();
+    const rawProperties = uplistingKey ? fetchFromUplisting(uplistingKey, is90DaysProperty) : getMockProperties();
     const fxData        = fetchFxRate();
     const properties    = rawProperties
       .filter(function(p) { return is90DaysProperty(p.name); })
@@ -329,7 +338,7 @@ function is90DaysProperty(name) {
   function debugNotifyMatch() {
     const props = PropertiesService.getScriptProperties();
     const uplistingKey = props.getProperty('UPLISTING_KEY');
-    const rawProperties = uplistingKey ? fetchFromUplisting(uplistingKey) : getMockProperties();
+    const rawProperties = uplistingKey ? fetchFromUplisting(uplistingKey, is90DaysProperty) : getMockProperties();
     rawProperties.forEach(function(p) {
       const matched = is90DaysProperty(p.name);
       var codes = '';

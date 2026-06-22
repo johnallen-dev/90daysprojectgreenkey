@@ -32,7 +32,12 @@
     'Bjarnastaðir Sv.2 - 7',
     'Sambyggð 14',
     'Boðaþing 20',
-    'Snorrabraut 33'
+    'Snorrabraut 33',
+    'Berjaholtslækur 7',
+    'Grettisgata 34',
+    'Hvammsgerði 10',
+    'Hraunbær 102A',
+    'Heiðarimi 24'
   ]);
 
   function is90Days(name) {
