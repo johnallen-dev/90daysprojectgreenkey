@@ -315,7 +315,30 @@ a:hover { text-decoration: underline; }
   font-weight: 500;
   color: var(--text-secondary);
   white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: background .15s, border-color .15s, color .15s;
 }
+
+.prop-chip:hover { border-color: var(--text-muted); color: var(--text); }
+
+.prop-chip--selected {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--surface);
+}
+
+.prop-list-clear {
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 3px 6px;
+  text-decoration: underline;
+  align-self: center;
+}
+.prop-list-clear:hover { color: var(--text); }
 
 /* ── Tabs ──────────────────────────────────────────────────────────────────── */
 .tabs-bar {

@@ -54,7 +54,31 @@
 
     const items = [...TRACKED_90_DAYS].sort((a, b) => a.localeCompare(b));
     countEl.textContent = items.length;
-    body.innerHTML = items.map(n => `<span class="prop-chip">${n}</span>`).join('');
+    body.innerHTML =
+      items.map(n => `<span class="prop-chip" data-name="${n.replace(/"/g, '&quot;')}">${n}</span>`).join('') +
+      '<button class="prop-list-clear hidden" id="propListClear">Clear selection</button>';
+
+    body.addEventListener('click', e => {
+      const chip = e.target.closest('.prop-chip');
+      if (!chip) return;
+      const name = chip.dataset.name;
+      if (state.selectedProps.has(name)) {
+        state.selectedProps.delete(name);
+        chip.classList.remove('prop-chip--selected');
+      } else {
+        state.selectedProps.add(name);
+        chip.classList.add('prop-chip--selected');
+      }
+      document.getElementById('propListClear').classList.toggle('hidden', state.selectedProps.size === 0);
+      rerenderFiltered();
+    });
+
+    document.getElementById('propListClear').addEventListener('click', () => {
+      state.selectedProps.clear();
+      body.querySelectorAll('.prop-chip--selected').forEach(c => c.classList.remove('prop-chip--selected'));
+      document.getElementById('propListClear').classList.add('hidden');
+      rerenderFiltered();
+    });
 
     toggle.addEventListener('click', () => {
       const open = toggle.getAttribute('aria-expanded') === 'true';
@@ -65,17 +89,31 @@
 
   // ── App state ───────────────────────────────────────────────────────────────
   const state = {
-    data:      null,
-    sortCol:   'nights',
-    sortAsc:   false,
-    activeTab: 'table',
-    filter:    '90days'
+    data:          null,
+    sortCol:       'nights',
+    sortAsc:       false,
+    activeTab:     'table',
+    filter:        '90days',
+    selectedProps: new Set()
   };
 
   function filterProperties(properties) {
-    if (state.filter === '90days')    return properties.filter(p =>  is90Days(p.name));
+    if (state.filter === '90days') {
+      let f = properties.filter(p => is90Days(p.name));
+      if (state.selectedProps.size > 0)
+        f = f.filter(p => state.selectedProps.has(p.name));
+      return f;
+    }
     if (state.filter === 'non90days') return properties.filter(p => !is90Days(p.name));
     return properties;
+  }
+
+  function rerenderFiltered() {
+    if (!state.data) return;
+    const visible = filterProperties(state.data.properties);
+    renderSummary(state.data, visible);
+    renderCards(visible);
+    renderTable(visible);
   }
 
   // ── Mock data (matches 2026 Uplisting report screenshot) ────────────────────
@@ -474,12 +512,7 @@
     document.querySelectorAll('.filter-btn').forEach(b =>
       b.classList.toggle('active', b.dataset.filter === filter)
     );
-    if (state.data) {
-      const visible = filterProperties(state.data.properties);
-      renderSummary(state.data, visible);
-      renderCards(visible);
-      renderTable(visible);
-    }
+    rerenderFiltered();
   }
 
   // ── Tab switching ────────────────────────────────────────────────────────────
