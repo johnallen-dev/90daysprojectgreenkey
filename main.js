@@ -37,7 +37,9 @@
     'Grettisgata 34',
     'Hvammsgerði 10',
     'Hraunbær 102A',
-    'Heiðarimi 24'
+    'Heiðarimi 24',
+    'Akrasel 2',
+    'Úthlíð 13'
   ]);
 
   function is90Days(name) {
