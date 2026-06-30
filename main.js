@@ -39,7 +39,10 @@
     'Hraunbær 102A',
     'Heiðarimi 24',
     'Akrasel 2',
-    'Úthlíð 13'
+    'Úthlíð 13',
+    'Laugavegur 17',
+    'Hörðukór 3 - 702',
+    'Lágholtsvegur 9'
   ]);
 
   function is90Days(name) {

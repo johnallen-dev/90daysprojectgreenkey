@@ -214,7 +214,8 @@ const TRACKED_90_DAYS = [
   'Vesturgata 21b', 'Ugluhólar 6', 'Bjarnastaðir Sv.2 - 7', 'Sambyggð 14',
   'Boðaþing 20', 'Snorrabraut 33', 'Berjaholtslækur 7',
   'Grettisgata 34', 'Hvammsgerði 10', 'Hraunbær 102A', 'Heiðarimi 24',
-  'Akrasel 2', 'Úthlíð 13'
+  'Akrasel 2', 'Úthlíð 13',
+  'Laugavegur 17', 'Hörðukór 3 - 702', 'Lágholtsvegur 9'
 ];
 
 function is90DaysProperty(name) {
